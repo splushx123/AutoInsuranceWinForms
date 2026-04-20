@@ -24,9 +24,10 @@ namespace AutoInsuranceWinForms
             {
                 Text = "Автострахование",
                 Dock = DockStyle.Top,
-                Height = 86,
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
-                ForeColor = Color.White
+                Height = 54,
+                Font = new Font("Segoe UI", 15F, FontStyle.Bold),
+                ForeColor = Color.White,
+                TextAlign = ContentAlignment.MiddleLeft
             });
             var btnLogout = Theme.CreatePrimaryButton("Выход", 210);
             btnLogout.Dock = DockStyle.Bottom;
