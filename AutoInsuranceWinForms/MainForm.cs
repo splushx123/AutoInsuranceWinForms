@@ -34,24 +34,29 @@ namespace AutoInsuranceWinForms
             btnLogout.Click += delegate { ReturnToLogin = true; Close(); };
             sidebar.Controls.Add(btnLogout);
 
-            var top = new Panel { Dock = DockStyle.Top, Height = 96, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
-            var lblSubtitle = new Label
-            {
-                Text = "Централизованный доступ к клиентам, автомобилям, договорам, страховым случаям, выплатам, сотрудникам, комиссиям и отчетам.",
-                Dock = DockStyle.Top,
-                Height = 42,
-                ForeColor = Theme.Muted
-            };
-            var lblTitle = new Label
+            var top = new Panel { Dock = DockStyle.Top, Height = 132, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
+            top.Controls.Add(new Label
             {
                 Text = "Главный модуль администратора",
                 Dock = DockStyle.Top,
                 Height = 30,
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Theme.Text
-            };
-            top.Controls.Add(lblSubtitle);
-            top.Controls.Add(lblTitle);
+            });
+            top.Controls.Add(new Label
+            {
+                Text = "Централизованный доступ к клиентам, автомобилям, договорам, страховым случаям, выплатам, сотрудникам, комиссиям и отчетам.",
+                Dock = DockStyle.Top,
+                Height = 52,
+                ForeColor = Theme.Muted
+            });
+            top.Controls.Add(new Label
+            {
+                Text = "Пользователь: " + _user.FullName + " | Роль: " + RoleTitle(_user.Role),
+                Dock = DockStyle.Bottom,
+                Height = 26,
+                ForeColor = Theme.Muted
+            });
 
             var body = new Panel { Dock = DockStyle.Fill, Padding = new Padding(22) };
             _statsPanel.Dock = DockStyle.Top;
