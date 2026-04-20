@@ -73,11 +73,16 @@ namespace AutoInsuranceWinForms
         private void FillStats()
         {
             _statsPanel.Controls.Clear();
-            AddStatCard("Клиенты", SafeCount("SELECT COUNT(*) FROM Client").ToString(), Theme.Primary);
-            AddStatCard("Автомобили", SafeCount("SELECT COUNT(*) FROM Vehicles").ToString(), Theme.Success);
-            AddStatCard("Договоры", SafeCount("SELECT COUNT(*) FROM Contract").ToString(), Theme.Warning);
-            AddStatCard("Страховые случаи", SafeCount("SELECT COUNT(*) FROM Insurance_cases").ToString(), Color.FromArgb(56, 96, 178));
-            AddStatCard("Выплаты", SafeRoundedMoney("SELECT ISNULL(SUM(payout_amount), 0) FROM Insurance_payouts") + " ₽", Color.FromArgb(126, 87, 194));
+            if (_user.Role == UserRole.DepartmentHead || _user.Role == UserRole.Manager || _user.Role == UserRole.SeniorAgent)
+                AddStatCard("Клиенты", SafeCount("SELECT COUNT(*) FROM Client").ToString(), Theme.Primary);
+            if (_user.Role == UserRole.DepartmentHead || _user.Role == UserRole.Manager || _user.Role == UserRole.SeniorAgent)
+                AddStatCard("Автомобили", SafeCount("SELECT COUNT(*) FROM Vehicles").ToString(), Theme.Success);
+            if (_user.Role == UserRole.DepartmentHead || _user.Role == UserRole.Manager || _user.Role == UserRole.SeniorAgent)
+                AddStatCard("Договоры", SafeCount("SELECT COUNT(*) FROM Contract").ToString(), Theme.Warning);
+            if (_user.Role == UserRole.DepartmentHead || _user.Role == UserRole.Manager || _user.Role == UserRole.InsuranceAgent)
+                AddStatCard("Страховые случаи", SafeCount("SELECT COUNT(*) FROM Insurance_cases").ToString(), Color.FromArgb(56, 96, 178));
+            if (_user.Role == UserRole.DepartmentHead || _user.Role == UserRole.InsuranceAgent)
+                AddStatCard("Выплаты", SafeRoundedMoney("SELECT ISNULL(SUM(payout_amount), 0) FROM Insurance_payouts") + " ₽", Color.FromArgb(126, 87, 194));
         }
 
         private int SafeCount(string sql)
@@ -102,13 +107,18 @@ namespace AutoInsuranceWinForms
         private void FillTiles()
         {
             _tilesPanel.Controls.Clear();
-            AddTile("Клиенты", "Учет физических лиц и их контактных данных.", delegate { OpenModule("Клиенты", new ClientsForm(_user)); }, true);
-            AddTile("Автомобили", "VIN, госномер, модель, категория, мощность.", delegate { OpenModule("Автомобили", new VehiclesForm(_user)); }, true);
-            AddTile("Договоры", "Оформление полисов ОСАГО, КАСКО, ДСАГО.", delegate { OpenModule("Договоры", new ContractsForm(_user)); }, true);
-            AddTile("Страховые случаи", "Регистрация ДТП, угона, повреждений и ущерба.", delegate { OpenModule("Страховые случаи", new InsuranceCasesForm(_user)); }, true);
-            AddTile("Выплаты", "Учет страховых выплат по случаям.", delegate { OpenModule("Выплаты", new PayoutsForm(_user)); }, true);
-            AddTile("Сотрудники", "Учет сотрудников страховой компании.", delegate { OpenModule("Сотрудники", new EmployeesForm(_user)); }, _user.Role == UserRole.Administrator);
-            AddTile("Комиссии", "Просмотр начисленных комиссий.", delegate { OpenModule("Комиссии", new CommissionsForm()); }, _user.Role != UserRole.Adjuster);
+            var isHead = _user.Role == UserRole.DepartmentHead;
+            var isManager = _user.Role == UserRole.Manager;
+            var isSeniorAgent = _user.Role == UserRole.SeniorAgent;
+            var isInsuranceAgent = _user.Role == UserRole.InsuranceAgent;
+
+            AddTile("Клиенты", "Учет физических лиц и их контактных данных.", delegate { OpenModule("Клиенты", new ClientsForm(_user)); }, isHead || isManager || isSeniorAgent);
+            AddTile("Автомобили", "VIN, госномер, модель, категория, мощность.", delegate { OpenModule("Автомобили", new VehiclesForm(_user)); }, isHead || isManager || isSeniorAgent);
+            AddTile("Договоры", "Оформление полисов ОСАГО, КАСКО, ДСАГО.", delegate { OpenModule("Договоры", new ContractsForm(_user)); }, isHead || isManager || isSeniorAgent);
+            AddTile("Страховые случаи", "Регистрация ДТП, угона, повреждений и ущерба.", delegate { OpenModule("Страховые случаи", new InsuranceCasesForm(_user)); }, isHead || isManager || isInsuranceAgent);
+            AddTile("Выплаты", "Учет страховых выплат по случаям.", delegate { OpenModule("Выплаты", new PayoutsForm(_user)); }, isHead || isInsuranceAgent);
+            AddTile("Сотрудники", "Учет сотрудников страховой компании.", delegate { OpenModule("Сотрудники", new EmployeesForm(_user)); }, isHead || isSeniorAgent || isInsuranceAgent);
+            AddTile("Комиссии", "Просмотр начисленных комиссий.", delegate { OpenModule("Комиссии", new CommissionsForm()); }, isHead || isInsuranceAgent);
             AddTile("Отчеты", "Сводная аналитика по договорам, случаям и выплатам.", delegate { OpenModule("Отчеты", new ReportsForm()); }, true);
         }
 

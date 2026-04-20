@@ -56,7 +56,7 @@ ORDER BY v.VIN", new SqlParameter("@search", search));
 
         private void DeleteSelected()
         {
-            if (_user.Role == UserRole.Adjuster) { MessageBox.Show("У этой роли нет прав на удаление автомобилей."); return; }
+            if (_user.Role == UserRole.InsuranceAgent) { MessageBox.Show("У этой роли нет прав на удаление автомобилей."); return; }
             var vin = SelectedVin(); if (string.IsNullOrEmpty(vin)) return;
             if (MessageBox.Show("Удалить автомобиль?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
             try { Db.Execute("DELETE FROM Vehicles WHERE VIN=@vin", new SqlParameter("@vin", vin)); LoadData(); }
