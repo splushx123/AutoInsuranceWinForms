@@ -52,7 +52,7 @@ namespace AutoInsuranceWinForms
             layout.Controls.Add(_lblError, 1, 3);
 
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 55, FlowDirection = FlowDirection.RightToLeft };
-            var btnLogin = Theme.CreatePrimaryButton("Войти", 120);
+            var btnLogin = Theme.CreatePrimaryButton("Войти", 120, true);
             var btnClose = Theme.CreateSecondaryButton("Закрыть", 120);
             btnLogin.Click += delegate { DoLogin(); };
             btnClose.Click += delegate { Close(); };

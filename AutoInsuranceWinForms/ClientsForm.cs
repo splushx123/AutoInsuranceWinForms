@@ -54,7 +54,7 @@ ORDER BY last_name, first_name", new SqlParameter("@search", search));
 
         private void DeleteSelected()
         {
-            if (_user.Role == UserRole.Adjuster) { MessageBox.Show("У этой роли нет прав на удаление клиентов."); return; }
+            if (_user.Role == UserRole.InsuranceAgent) { MessageBox.Show("У этой роли нет прав на удаление клиентов."); return; }
             var id = SelectedId(_grid); if (!id.HasValue) return;
             if (MessageBox.Show("Удалить клиента?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
             try { Db.Execute("DELETE FROM Client WHERE id_client=@id", new SqlParameter("@id", id.Value)); LoadData(); }
