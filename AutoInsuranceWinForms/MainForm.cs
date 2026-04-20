@@ -22,7 +22,7 @@ namespace AutoInsuranceWinForms
             var sidebar = new Panel { Dock = DockStyle.Left, Width = 250, BackColor = Theme.Sidebar, Padding = new Padding(18) };
             sidebar.Controls.Add(new Label
             {
-                Text = "Auto\nInsurance",
+                Text = "Автострахование",
                 Dock = DockStyle.Top,
                 Height = 86,
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
@@ -33,14 +33,21 @@ namespace AutoInsuranceWinForms
             btnLogout.Click += delegate { ReturnToLogin = true; Close(); };
             sidebar.Controls.Add(btnLogout);
 
-            var top = new Panel { Dock = DockStyle.Top, Height = 100, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
+            var top = new Panel { Dock = DockStyle.Top, Height = 132, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
             top.Controls.Add(new Label
             {
-                Text = "Автоматизация страховой компании по автострахованию",
+                Text = "Главный модуль администратора",
                 Dock = DockStyle.Top,
                 Height = 30,
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Theme.Text
+            });
+            top.Controls.Add(new Label
+            {
+                Text = "Централизованный доступ к клиентам, автомобилям, договорам, страховым случаям, выплатам, сотрудникам, комиссиям и отчетам.",
+                Dock = DockStyle.Top,
+                Height = 52,
+                ForeColor = Theme.Muted
             });
             top.Controls.Add(new Label
             {
@@ -116,9 +123,9 @@ namespace AutoInsuranceWinForms
         private void AddTile(string title, string description, Action action, bool visible)
         {
             if (!visible) return;
-            var card = Theme.CreateCard(); card.Width = 250; card.Height = 155;
+            var card = Theme.CreateCard(); card.Width = 250; card.Height = 172;
             var lblTitle = new Label { Text = title, Dock = DockStyle.Top, Height = 30, Font = new Font("Segoe UI", 12F, FontStyle.Bold) };
-            var lblDescription = new Label { Text = description, Dock = DockStyle.Fill, ForeColor = Theme.Muted };
+            var lblDescription = new Label { Text = description, Dock = DockStyle.Fill, ForeColor = Theme.Muted, AutoEllipsis = true };
             var btnOpen = Theme.CreatePrimaryButton("Открыть", 110); btnOpen.Dock = DockStyle.Bottom; btnOpen.Click += delegate { action(); };
             card.Controls.Add(btnOpen); card.Controls.Add(lblDescription); card.Controls.Add(lblTitle);
             _tilesPanel.Controls.Add(card);
