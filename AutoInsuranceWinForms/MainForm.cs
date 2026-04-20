@@ -78,7 +78,7 @@ namespace AutoInsuranceWinForms
             AddStatCard("Автомобили", SafeCount("SELECT COUNT(*) FROM Vehicles").ToString(), Theme.Success);
             AddStatCard("Договоры", SafeCount("SELECT COUNT(*) FROM Contract").ToString(), Theme.Warning);
             AddStatCard("Страховые случаи", SafeCount("SELECT COUNT(*) FROM Insurance_cases").ToString(), Color.FromArgb(56, 96, 178));
-            AddStatCard("Выплаты", SafeRoundedMoney("SELECT ISNULL(SUM(payout_amount), 0) FROM Insurance_payouts"), Color.FromArgb(126, 87, 194));
+            AddStatCard("Выплаты", SafeRoundedMoney("SELECT ISNULL(SUM(payout_amount), 0) FROM Insurance_payouts") + " ₽", Color.FromArgb(126, 87, 194));
         }
 
         private int SafeCount(string sql)
@@ -152,10 +152,11 @@ namespace AutoInsuranceWinForms
             var lblValue = new Label
             {
                 Text = value,
-                Dock = DockStyle.Fill,
+                Dock = DockStyle.Bottom,
+                Height = 42,
                 Font = new Font("Segoe UI", 22F, FontStyle.Bold),
                 ForeColor = Theme.Text,
-                TextAlign = ContentAlignment.BottomLeft
+                TextAlign = ContentAlignment.MiddleLeft
             };
 
             card.Controls.Add(lblValue);
