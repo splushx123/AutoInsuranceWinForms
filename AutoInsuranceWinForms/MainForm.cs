@@ -22,48 +22,52 @@ namespace AutoInsuranceWinForms
             var sidebar = new Panel { Dock = DockStyle.Left, Width = 250, BackColor = Theme.Sidebar, Padding = new Padding(18) };
             sidebar.Controls.Add(new Label
             {
-                Text = "Auto\nInsurance",
+                Text = "Автострахование",
                 Dock = DockStyle.Top,
-                Height = 86,
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
-                ForeColor = Color.White
+                Height = 54,
+                AutoSize = false,
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                ForeColor = Color.White,
+                TextAlign = ContentAlignment.MiddleLeft
             });
             var btnLogout = Theme.CreatePrimaryButton("Выход", 210);
             btnLogout.Dock = DockStyle.Bottom;
             btnLogout.Click += delegate { ReturnToLogin = true; Close(); };
             sidebar.Controls.Add(btnLogout);
 
-            var top = new Panel { Dock = DockStyle.Top, Height = 100, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
-            top.Controls.Add(new Label
+            var top = new Panel { Dock = DockStyle.Top, Height = 96, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
+            var lblSubtitle = new Label
             {
-                Text = "Автоматизация страховой компании по автострахованию",
+                Text = "Централизованный доступ к клиентам, автомобилям, договорам, страховым случаям, выплатам, сотрудникам, комиссиям и отчетам.",
+                Dock = DockStyle.Top,
+                Height = 42,
+                AutoSize = false,
+                ForeColor = Theme.Muted
+            };
+            var lblTitle = new Label
+            {
+                Text = "Главный модуль администратора",
                 Dock = DockStyle.Top,
                 Height = 30,
+                AutoSize = false,
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Theme.Text
-            });
-            top.Controls.Add(new Label
-            {
-                Text = "Пользователь: " + _user.FullName + " | Роль: " + RoleTitle(_user.Role),
-                Dock = DockStyle.Bottom,
-                Height = 26,
-                ForeColor = Theme.Muted
-            });
+            };
+            top.Controls.Add(lblSubtitle);
+            top.Controls.Add(lblTitle);
 
             var body = new Panel { Dock = DockStyle.Fill, Padding = new Padding(22) };
-            _statsPanel.Dock = DockStyle.Top; _statsPanel.Height = 136; _statsPanel.WrapContents = true;
+            _statsPanel.Dock = DockStyle.Top;
+            _statsPanel.Height = 150;
+            _statsPanel.WrapContents = true;
+            _statsPanel.AutoSize = false;
+            _statsPanel.BackColor = Color.Transparent;
+            _statsPanel.Padding = new Padding(0, 4, 0, 8);
             _tilesPanel.Dock = DockStyle.Fill; _tilesPanel.WrapContents = true; _tilesPanel.AutoScroll = true;
             body.Controls.Add(_tilesPanel); body.Controls.Add(_statsPanel);
 
             Controls.Add(body); Controls.Add(top); Controls.Add(sidebar);
             Load += delegate { FillStats(); FillTiles(); };
-        }
-
-        private string RoleTitle(UserRole role)
-        {
-            if (role == UserRole.Administrator) return "Администратор";
-            if (role == UserRole.Manager) return "Менеджер";
-            return "Специалист по урегулированию";
         }
 
         private void FillStats()
@@ -73,12 +77,26 @@ namespace AutoInsuranceWinForms
             AddStatCard("Автомобили", SafeCount("SELECT COUNT(*) FROM Vehicles").ToString(), Theme.Success);
             AddStatCard("Договоры", SafeCount("SELECT COUNT(*) FROM Contract").ToString(), Theme.Warning);
             AddStatCard("Страховые случаи", SafeCount("SELECT COUNT(*) FROM Insurance_cases").ToString(), Color.FromArgb(56, 96, 178));
-            AddStatCard("Выплаты", SafeCount("SELECT COUNT(*) FROM Insurance_payouts").ToString(), Color.FromArgb(126, 87, 194));
+            AddStatCard("Выплаты", SafeRoundedMoney("SELECT ISNULL(SUM(payout_amount), 0) FROM Insurance_payouts") + " ₽", Color.FromArgb(126, 87, 194));
         }
 
         private int SafeCount(string sql)
         {
             try { return Db.Count(sql); } catch { return 0; }
+        }
+
+        private string SafeRoundedMoney(string sql)
+        {
+            try
+            {
+                var raw = Db.Scalar(sql);
+                var amount = Convert.ToDecimal(raw);
+                return Math.Round(amount, 0, MidpointRounding.AwayFromZero).ToString("0");
+            }
+            catch
+            {
+                return "0";
+            }
         }
 
         private void FillTiles()
@@ -97,9 +115,9 @@ namespace AutoInsuranceWinForms
         private void AddTile(string title, string description, Action action, bool visible)
         {
             if (!visible) return;
-            var card = Theme.CreateCard(); card.Width = 250; card.Height = 155;
+            var card = Theme.CreateCard(); card.Width = 250; card.Height = 172;
             var lblTitle = new Label { Text = title, Dock = DockStyle.Top, Height = 30, Font = new Font("Segoe UI", 12F, FontStyle.Bold) };
-            var lblDescription = new Label { Text = description, Dock = DockStyle.Fill, ForeColor = Theme.Muted };
+            var lblDescription = new Label { Text = description, Dock = DockStyle.Fill, ForeColor = Theme.Muted, AutoEllipsis = true };
             var btnOpen = Theme.CreatePrimaryButton("Открыть", 110); btnOpen.Dock = DockStyle.Bottom; btnOpen.Click += delegate { action(); };
             card.Controls.Add(btnOpen); card.Controls.Add(lblDescription); card.Controls.Add(lblTitle);
             _tilesPanel.Controls.Add(card);
@@ -107,9 +125,43 @@ namespace AutoInsuranceWinForms
 
         private void AddStatCard(string title, string value, Color color)
         {
-            var card = Theme.CreateCard(); card.Width = 210; card.Height = 92; card.BackColor = color;
-            card.Controls.Add(new Label { Text = value, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 24F, FontStyle.Bold), ForeColor = Color.White, TextAlign = ContentAlignment.MiddleCenter });
-            card.Controls.Add(new Label { Text = title, Dock = DockStyle.Top, Height = 28, ForeColor = Color.White, TextAlign = ContentAlignment.MiddleCenter });
+            var valueFontSize = value.IndexOf("₽", StringComparison.Ordinal) >= 0 ? 18F : 22F;
+            var card = Theme.CreateCard();
+            card.Width = 180;
+            card.Height = 110;
+            card.BackColor = Theme.Surface;
+            card.Margin = new Padding(0, 0, 16, 0);
+            card.Padding = new Padding(14, 10, 14, 10);
+
+            var accent = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 6,
+                BackColor = color,
+                Margin = new Padding(0, 0, 0, 8)
+            };
+            var lblTitle = new Label
+            {
+                Text = title,
+                Dock = DockStyle.Top,
+                Height = 26,
+                ForeColor = Theme.Muted,
+                Font = new Font("Segoe UI", 12F, FontStyle.Regular),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            var lblValue = new Label
+            {
+                Text = value,
+                Dock = DockStyle.Bottom,
+                Height = 42,
+                Font = new Font("Segoe UI", valueFontSize, FontStyle.Bold),
+                ForeColor = Theme.Text,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            card.Controls.Add(lblValue);
+            card.Controls.Add(lblTitle);
+            card.Controls.Add(accent);
             _statsPanel.Controls.Add(card);
         }
 
