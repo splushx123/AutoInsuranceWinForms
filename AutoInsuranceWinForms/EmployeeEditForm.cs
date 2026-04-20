@@ -8,10 +8,11 @@ namespace AutoInsuranceWinForms
     public class EmployeeEditForm : Form
     {
         private readonly int? _id;
-        private readonly TextBox _lastName = Theme.CreateTextBox(220); private readonly TextBox _firstName = Theme.CreateTextBox(220); private readonly TextBox _middleName = Theme.CreateTextBox(220); private readonly TextBox _position = Theme.CreateTextBox(220); private readonly TextBox _phone = Theme.CreateTextBox(220); private readonly TextBox _email = Theme.CreateTextBox(220);
+        private readonly TextBox _lastName = Theme.CreateTextBox(220); private readonly TextBox _firstName = Theme.CreateTextBox(220); private readonly TextBox _middleName = Theme.CreateTextBox(220); private readonly ComboBox _position = Theme.CreateComboBox(220); private readonly TextBox _phone = Theme.CreateTextBox(220); private readonly TextBox _email = Theme.CreateTextBox(220);
         public EmployeeEditForm(int? id)
         {
             _id = id; Theme.StyleForm(this); Text = id.HasValue ? "Изменение сотрудника" : "Добавление сотрудника"; Width = 620; Height = 360; StartPosition = FormStartPosition.CenterParent;
+            _position.Items.AddRange(new object[] { "Руководитель отдела", "Менеджер", "Старший агент", "Страховой агент" });
             var table = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, Padding = new Padding(16) };
             table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 180)); table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             AddField(table, "Фамилия", _lastName); AddField(table, "Имя", _firstName); AddField(table, "Отчество", _middleName); AddField(table, "Должность", _position); AddField(table, "Телефон", _phone); AddField(table, "E-mail", _email);
