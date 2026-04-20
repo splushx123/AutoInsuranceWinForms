@@ -51,7 +51,12 @@ namespace AutoInsuranceWinForms
             });
 
             var body = new Panel { Dock = DockStyle.Fill, Padding = new Padding(22) };
-            _statsPanel.Dock = DockStyle.Top; _statsPanel.Height = 136; _statsPanel.WrapContents = true;
+            _statsPanel.Dock = DockStyle.Top;
+            _statsPanel.Height = 150;
+            _statsPanel.WrapContents = true;
+            _statsPanel.AutoSize = false;
+            _statsPanel.BackColor = Color.Transparent;
+            _statsPanel.Padding = new Padding(0, 4, 0, 8);
             _tilesPanel.Dock = DockStyle.Fill; _tilesPanel.WrapContents = true; _tilesPanel.AutoScroll = true;
             body.Controls.Add(_tilesPanel); body.Controls.Add(_statsPanel);
 
@@ -73,12 +78,26 @@ namespace AutoInsuranceWinForms
             AddStatCard("Автомобили", SafeCount("SELECT COUNT(*) FROM Vehicles").ToString(), Theme.Success);
             AddStatCard("Договоры", SafeCount("SELECT COUNT(*) FROM Contract").ToString(), Theme.Warning);
             AddStatCard("Страховые случаи", SafeCount("SELECT COUNT(*) FROM Insurance_cases").ToString(), Color.FromArgb(56, 96, 178));
-            AddStatCard("Выплаты", SafeCount("SELECT COUNT(*) FROM Insurance_payouts").ToString(), Color.FromArgb(126, 87, 194));
+            AddStatCard("Выплаты", SafeRoundedMoney("SELECT ISNULL(SUM(payout_amount), 0) FROM Insurance_payouts"), Color.FromArgb(126, 87, 194));
         }
 
         private int SafeCount(string sql)
         {
             try { return Db.Count(sql); } catch { return 0; }
+        }
+
+        private string SafeRoundedMoney(string sql)
+        {
+            try
+            {
+                var raw = Db.Scalar(sql);
+                var amount = Convert.ToDecimal(raw);
+                return Math.Round(amount, 0, MidpointRounding.AwayFromZero).ToString("0");
+            }
+            catch
+            {
+                return "0";
+            }
         }
 
         private void FillTiles()
@@ -107,9 +126,41 @@ namespace AutoInsuranceWinForms
 
         private void AddStatCard(string title, string value, Color color)
         {
-            var card = Theme.CreateCard(); card.Width = 210; card.Height = 92; card.BackColor = color;
-            card.Controls.Add(new Label { Text = value, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 24F, FontStyle.Bold), ForeColor = Color.White, TextAlign = ContentAlignment.MiddleCenter });
-            card.Controls.Add(new Label { Text = title, Dock = DockStyle.Top, Height = 28, ForeColor = Color.White, TextAlign = ContentAlignment.MiddleCenter });
+            var card = Theme.CreateCard();
+            card.Width = 180;
+            card.Height = 110;
+            card.BackColor = Theme.Surface;
+            card.Margin = new Padding(0, 0, 16, 0);
+            card.Padding = new Padding(14, 10, 14, 10);
+
+            var accent = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 6,
+                BackColor = color,
+                Margin = new Padding(0, 0, 0, 8)
+            };
+            var lblTitle = new Label
+            {
+                Text = title,
+                Dock = DockStyle.Top,
+                Height = 26,
+                ForeColor = Theme.Muted,
+                Font = new Font("Segoe UI", 12F, FontStyle.Regular),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            var lblValue = new Label
+            {
+                Text = value,
+                Dock = DockStyle.Fill,
+                Font = new Font("Segoe UI", 22F, FontStyle.Bold),
+                ForeColor = Theme.Text,
+                TextAlign = ContentAlignment.BottomLeft
+            };
+
+            card.Controls.Add(lblValue);
+            card.Controls.Add(lblTitle);
+            card.Controls.Add(accent);
             _statsPanel.Controls.Add(card);
         }
 
