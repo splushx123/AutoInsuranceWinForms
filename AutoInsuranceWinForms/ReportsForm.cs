@@ -11,6 +11,7 @@ namespace AutoInsuranceWinForms
     {
         private readonly DataGridView _grid = new DataGridView { Dock = DockStyle.Fill };
         private readonly ComboBox _cb = Theme.CreateComboBox(300);
+        private static readonly Encoding ExportEncoding = new UTF8Encoding(true);
 
         public ReportsForm()
         {
@@ -69,7 +70,7 @@ namespace AutoInsuranceWinForms
                 if (row.IsNewRow) continue;
                 sb.AppendLine(string.Join(separator, row.Cells.Cast<DataGridViewCell>().Select(c => GetCellText(c).Replace(separator, " "))));
             }
-            File.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
+            File.WriteAllText(fileName, sb.ToString(), ExportEncoding);
         }
 
         private void ExportJson(string fileName)
@@ -94,7 +95,7 @@ namespace AutoInsuranceWinForms
                 sb.AppendLine();
             }
             sb.AppendLine("]");
-            File.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
+            File.WriteAllText(fileName, sb.ToString(), ExportEncoding);
         }
 
         private void ExportXml(string fileName)
@@ -116,7 +117,7 @@ namespace AutoInsuranceWinForms
                 sb.AppendLine("  </row>");
             }
             sb.AppendLine("</report>");
-            File.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
+            File.WriteAllText(fileName, sb.ToString(), ExportEncoding);
         }
 
         private string GetCellText(DataGridViewCell cell)
