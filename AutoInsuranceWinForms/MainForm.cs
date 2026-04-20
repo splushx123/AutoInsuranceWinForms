@@ -38,7 +38,7 @@ namespace AutoInsuranceWinForms
             var top = new Panel { Dock = DockStyle.Top, Height = 96, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
             var lblSubtitle = new Label
             {
-                Text = "Централизованный доступ к клиентам, автомобилям, договорам, страховым случаям, выплатам, сотрудникам, комиссиям и отчетам.",
+                Text = BuildAccessText(_user.Role),
                 Dock = DockStyle.Top,
                 Height = 42,
                 AutoSize = false,
@@ -46,7 +46,7 @@ namespace AutoInsuranceWinForms
             };
             var lblTitle = new Label
             {
-                Text = "Главный модуль администратора",
+                Text = BuildRoleTitle(_user.Role),
                 Dock = DockStyle.Top,
                 Height = 30,
                 AutoSize = false,
@@ -68,6 +68,25 @@ namespace AutoInsuranceWinForms
 
             Controls.Add(body); Controls.Add(top); Controls.Add(sidebar);
             Load += delegate { FillStats(); FillTiles(); };
+        }
+
+        private string BuildRoleTitle(UserRole role)
+        {
+            if (role == UserRole.DepartmentHead) return "Главный модуль руководителя отдела";
+            if (role == UserRole.Manager) return "Главный модуль менеджера";
+            if (role == UserRole.SeniorAgent) return "Главный модуль старшего агента";
+            return "Главный модуль страхового агента";
+        }
+
+        private string BuildAccessText(UserRole role)
+        {
+            if (role == UserRole.DepartmentHead)
+                return "Централизованный доступ ко всем разделам: клиенты, автомобили, договоры, страховые случаи, выплаты, сотрудники, комиссии и отчеты.";
+            if (role == UserRole.Manager)
+                return "Доступ к разделам: клиенты, автомобили, договоры, страховые случаи, сотрудники и отчеты. Разделы выплаты и комиссии скрыты.";
+            if (role == UserRole.SeniorAgent)
+                return "Доступ к разделам: клиенты, автомобили, договоры, сотрудники и отчеты.";
+            return "Доступ к разделам: страховые случаи, выплаты, комиссии, сотрудники и отчеты.";
         }
 
         private void FillStats()
