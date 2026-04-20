@@ -11,6 +11,8 @@ namespace AutoInsuranceWinForms
 
             if (email == Read("AdminEmail"))
                 return new UserAccount { Email = email, FullName = "Администратор", Role = UserRole.Administrator };
+            if (email == Read("HeadEmail"))
+                return new UserAccount { Email = email, FullName = "Руководитель отдела", Role = UserRole.Administrator };
             if (email == Read("ManagerEmail"))
                 return new UserAccount { Email = email, FullName = "Менеджер по страхованию", Role = UserRole.Manager };
             if (email == Read("AdjusterEmail"))
