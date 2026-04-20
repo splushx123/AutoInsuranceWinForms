@@ -37,6 +37,9 @@ namespace AutoInsuranceWinForms
             top.Controls.Add(_txtVinSearch);
             top.Controls.Add(_chkActiveOnly);
             top.Controls.Add(btnAdd); top.Controls.Add(btnEdit); top.Controls.Add(btnDelete);
+            top.Controls.Add(new Label { Text = "Поиск по VIN:", AutoSize = true, Padding = new Padding(10, 8, 0, 0) });
+            top.Controls.Add(_txtVinSearch);
+            top.Controls.Add(_chkActiveOnly);
             Controls.Add(_grid); Controls.Add(top); Load += delegate { LoadData(); };
         }
 
