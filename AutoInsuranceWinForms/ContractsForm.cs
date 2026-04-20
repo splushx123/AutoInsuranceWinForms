@@ -29,7 +29,7 @@ namespace AutoInsuranceWinForms
             _chkActiveOnly.Margin = new Padding(0, 11, 20, 0);
             btnAdd.Margin = new Padding(0, 6, 10, 0);
             btnEdit.Margin = new Padding(0, 6, 10, 0);
-            btnDelete.Margin = new Padding(0, 6, 0, 0);
+            btnDelete.Margin = new Padding(0, 6, 14, 0);
             _txtVinSearch.TextChanged += delegate { LoadData(); };
             _chkActiveOnly.CheckedChanged += delegate { LoadData(); };
             btnAdd.Click += delegate { OpenEditor(null); }; btnEdit.Click += delegate { var id = SelectedId(_grid); if (id.HasValue) OpenEditor(id.Value); }; btnDelete.Click += delegate { DeleteSelected(); };
@@ -37,7 +37,7 @@ namespace AutoInsuranceWinForms
             top.Controls.Add(_txtVinSearch);
             top.Controls.Add(_chkActiveOnly);
             top.Controls.Add(btnAdd); top.Controls.Add(btnEdit); top.Controls.Add(btnDelete);
-            top.Controls.Add(new Label { Text = "Поиск по VIN:", AutoSize = true, Padding = new Padding(10, 8, 0, 0) });
+            top.Controls.Add(lblVin);
             top.Controls.Add(_txtVinSearch);
             top.Controls.Add(_chkActiveOnly);
             Controls.Add(_grid); Controls.Add(top); Load += delegate { LoadData(); };
