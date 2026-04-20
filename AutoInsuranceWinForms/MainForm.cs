@@ -126,6 +126,7 @@ namespace AutoInsuranceWinForms
 
         private void AddStatCard(string title, string value, Color color)
         {
+            var valueFontSize = value.IndexOf("₽", StringComparison.Ordinal) >= 0 ? 18F : 22F;
             var card = Theme.CreateCard();
             card.Width = 180;
             card.Height = 110;
@@ -154,7 +155,7 @@ namespace AutoInsuranceWinForms
                 Text = value,
                 Dock = DockStyle.Bottom,
                 Height = 42,
-                Font = new Font("Segoe UI", 22F, FontStyle.Bold),
+                Font = new Font("Segoe UI", valueFontSize, FontStyle.Bold),
                 ForeColor = Theme.Text,
                 TextAlign = ContentAlignment.MiddleLeft
             };
