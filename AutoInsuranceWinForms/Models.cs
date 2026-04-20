@@ -2,9 +2,10 @@ namespace AutoInsuranceWinForms
 {
     public enum UserRole
     {
-        Administrator,
+        DepartmentHead,
         Manager,
-        Adjuster
+        SeniorAgent,
+        InsuranceAgent
     }
 
     public sealed class UserAccount
