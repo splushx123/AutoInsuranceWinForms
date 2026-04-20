@@ -78,12 +78,26 @@ namespace AutoInsuranceWinForms
             AddStatCard("Автомобили", SafeCount("SELECT COUNT(*) FROM Vehicles").ToString(), Theme.Success);
             AddStatCard("Договоры", SafeCount("SELECT COUNT(*) FROM Contract").ToString(), Theme.Warning);
             AddStatCard("Страховые случаи", SafeCount("SELECT COUNT(*) FROM Insurance_cases").ToString(), Color.FromArgb(56, 96, 178));
-            AddStatCard("Выплаты", SafeCount("SELECT COUNT(*) FROM Insurance_payouts").ToString(), Color.FromArgb(126, 87, 194));
+            AddStatCard("Выплаты", SafeRoundedMoney("SELECT ISNULL(SUM(payout_amount), 0) FROM Insurance_payouts"), Color.FromArgb(126, 87, 194));
         }
 
         private int SafeCount(string sql)
         {
             try { return Db.Count(sql); } catch { return 0; }
+        }
+
+        private string SafeRoundedMoney(string sql)
+        {
+            try
+            {
+                var raw = Db.Scalar(sql);
+                var amount = Convert.ToDecimal(raw);
+                return Math.Round(amount, 0, MidpointRounding.AwayFromZero).ToString("0");
+            }
+            catch
+            {
+                return "0";
+            }
         }
 
         private void FillTiles()
