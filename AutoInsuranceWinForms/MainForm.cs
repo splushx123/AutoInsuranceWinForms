@@ -30,7 +30,7 @@ namespace AutoInsuranceWinForms
                 ForeColor = Color.White,
                 TextAlign = ContentAlignment.MiddleLeft
             });
-            var btnLogout = Theme.CreatePrimaryButton("Выход", 210);
+            var btnLogout = Theme.CreatePrimaryButton("Выход", 210, true);
             btnLogout.Dock = DockStyle.Bottom;
             btnLogout.Click += delegate { ReturnToLogin = true; Close(); };
             sidebar.Controls.Add(btnLogout);
@@ -118,7 +118,7 @@ namespace AutoInsuranceWinForms
             var card = Theme.CreateCard(); card.Width = 250; card.Height = 172;
             var lblTitle = new Label { Text = title, Dock = DockStyle.Top, Height = 30, Font = new Font("Segoe UI", 12F, FontStyle.Bold) };
             var lblDescription = new Label { Text = description, Dock = DockStyle.Fill, ForeColor = Theme.Muted, AutoEllipsis = true };
-            var btnOpen = Theme.CreatePrimaryButton("Открыть", 110); btnOpen.Dock = DockStyle.Bottom; btnOpen.Click += delegate { action(); };
+            var btnOpen = Theme.CreatePrimaryButton("Открыть", 110, true); btnOpen.Dock = DockStyle.Bottom; btnOpen.Click += delegate { action(); };
             card.Controls.Add(btnOpen); card.Controls.Add(lblDescription); card.Controls.Add(lblTitle);
             _tilesPanel.Controls.Add(card);
         }
