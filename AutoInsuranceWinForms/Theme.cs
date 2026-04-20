@@ -58,8 +58,10 @@ namespace AutoInsuranceWinForms
         {
             var b = new Button();
             b.Text = text; b.Width = width; b.Height = 38; b.FlatStyle = FlatStyle.Flat;
-            b.FlatAppearance.BorderSize = 0; b.BackColor = Primary; b.ForeColor = Color.White;
+            b.FlatAppearance.BorderColor = Border; b.FlatAppearance.BorderSize = 1;
+            b.BackColor = Surface; b.ForeColor = Text;
             b.Cursor = Cursors.Hand;
+            ApplyHoverBlue(b);
             return b;
         }
 
@@ -69,7 +71,24 @@ namespace AutoInsuranceWinForms
             b.Text = text; b.Width = width; b.Height = 38; b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderColor = Border; b.FlatAppearance.BorderSize = 1;
             b.BackColor = Surface; b.ForeColor = Text; b.Cursor = Cursors.Hand;
+            ApplyHoverBlue(b);
             return b;
+        }
+
+        private static void ApplyHoverBlue(Button button)
+        {
+            button.MouseEnter += delegate
+            {
+                button.BackColor = Primary;
+                button.ForeColor = Color.White;
+                button.FlatAppearance.BorderColor = Primary;
+            };
+            button.MouseLeave += delegate
+            {
+                button.BackColor = Surface;
+                button.ForeColor = Text;
+                button.FlatAppearance.BorderColor = Border;
+            };
         }
 
         public static void StyleGrid(DataGridView grid)
