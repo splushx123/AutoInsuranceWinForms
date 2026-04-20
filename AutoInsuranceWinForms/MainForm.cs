@@ -25,7 +25,8 @@ namespace AutoInsuranceWinForms
                 Text = "Автострахование",
                 Dock = DockStyle.Top,
                 Height = 54,
-                Font = new Font("Segoe UI", 15F, FontStyle.Bold),
+                AutoSize = false,
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
                 ForeColor = Color.White,
                 TextAlign = ContentAlignment.MiddleLeft
             });
@@ -34,29 +35,26 @@ namespace AutoInsuranceWinForms
             btnLogout.Click += delegate { ReturnToLogin = true; Close(); };
             sidebar.Controls.Add(btnLogout);
 
-            var top = new Panel { Dock = DockStyle.Top, Height = 132, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
-            top.Controls.Add(new Label
+            var top = new Panel { Dock = DockStyle.Top, Height = 96, Padding = new Padding(24, 16, 24, 14), BackColor = Theme.Surface };
+            var lblSubtitle = new Label
+            {
+                Text = "Централизованный доступ к клиентам, автомобилям, договорам, страховым случаям, выплатам, сотрудникам, комиссиям и отчетам.",
+                Dock = DockStyle.Top,
+                Height = 42,
+                AutoSize = false,
+                ForeColor = Theme.Muted
+            };
+            var lblTitle = new Label
             {
                 Text = "Главный модуль администратора",
                 Dock = DockStyle.Top,
                 Height = 30,
+                AutoSize = false,
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Theme.Text
-            });
-            top.Controls.Add(new Label
-            {
-                Text = "Централизованный доступ к клиентам, автомобилям, договорам, страховым случаям, выплатам, сотрудникам, комиссиям и отчетам.",
-                Dock = DockStyle.Top,
-                Height = 52,
-                ForeColor = Theme.Muted
-            });
-            top.Controls.Add(new Label
-            {
-                Text = "Пользователь: " + _user.FullName + " | Роль: " + RoleTitle(_user.Role),
-                Dock = DockStyle.Bottom,
-                Height = 26,
-                ForeColor = Theme.Muted
-            });
+            };
+            top.Controls.Add(lblSubtitle);
+            top.Controls.Add(lblTitle);
 
             var body = new Panel { Dock = DockStyle.Fill, Padding = new Padding(22) };
             _statsPanel.Dock = DockStyle.Top;
@@ -70,13 +68,6 @@ namespace AutoInsuranceWinForms
 
             Controls.Add(body); Controls.Add(top); Controls.Add(sidebar);
             Load += delegate { FillStats(); FillTiles(); };
-        }
-
-        private string RoleTitle(UserRole role)
-        {
-            if (role == UserRole.Administrator) return "Администратор";
-            if (role == UserRole.Manager) return "Менеджер";
-            return "Специалист по урегулированию";
         }
 
         private void FillStats()
