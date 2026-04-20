@@ -33,6 +33,9 @@ namespace AutoInsuranceWinForms
             _txtVinSearch.TextChanged += delegate { LoadData(); };
             _chkActiveOnly.CheckedChanged += delegate { LoadData(); };
             btnAdd.Click += delegate { OpenEditor(null); }; btnEdit.Click += delegate { var id = SelectedId(_grid); if (id.HasValue) OpenEditor(id.Value); }; btnDelete.Click += delegate { DeleteSelected(); };
+            top.Controls.Add(lblVin);
+            top.Controls.Add(_txtVinSearch);
+            top.Controls.Add(_chkActiveOnly);
             top.Controls.Add(btnAdd); top.Controls.Add(btnEdit); top.Controls.Add(btnDelete);
             top.Controls.Add(lblVin);
             top.Controls.Add(_txtVinSearch);
