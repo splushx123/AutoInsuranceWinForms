@@ -95,7 +95,21 @@ namespace AutoInsuranceWinForms
 
         private void AddField(TableLayoutPanel t, string name, Control control)
         {
-            int r = t.RowCount++; t.RowStyles.Add(new RowStyle(SizeType.Absolute, 40)); t.Controls.Add(new Label { Text = name, AutoSize = true, Padding = new Padding(0, 9, 0, 0) }, 0, r); t.Controls.Add(control, 1, r);
+            int r = t.RowCount++;
+            t.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            t.Controls.Add(new Label { Text = name, AutoSize = true, Padding = new Padding(0, 9, 0, 0) }, 0, r);
+            control.Dock = DockStyle.Fill;
+            control.Margin = new Padding(0, 4, 0, 4);
+            t.Controls.Add(control, 1, r);
+        }
+
+        private void AddSection(TableLayoutPanel t, string title)
+        {
+            int r = t.RowCount++;
+            t.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
+            var lbl = new Label { Text = title, AutoSize = true, Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold), Padding = new Padding(0, 10, 0, 0) };
+            t.Controls.Add(lbl, 0, r);
+            t.SetColumnSpan(lbl, 2);
         }
 
         private void AddSection(TableLayoutPanel t, string title)
