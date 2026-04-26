@@ -118,6 +118,8 @@ namespace AutoInsuranceWinForms
         {
             try
             {
+                if (!ValidateCommonFields()) return;
+
                 if (_id.HasValue)
                 {
                     Db.Execute(@"UPDATE Contract SET id_type=@type, start_date=@start, end_date=@end, insurance_amount=@amount, employee_id=@employee, id_commission=@commission, VIN=@vin WHERE id_contract=@id",
@@ -125,11 +127,8 @@ namespace AutoInsuranceWinForms
                 }
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(_vehicleVin.Text))
-                    {
-                        MessageBox.Show("Введите VIN автомобиля.");
-                        return;
-                    }
+                    if (!ValidateAddModeFields()) return;
+                    string vin = _vehicleVin.Text.Trim().ToUpperInvariant();
 
                     using (var connection = new SqlConnection(Db.ConnectionString))
                     {
@@ -141,6 +140,9 @@ namespace AutoInsuranceWinForms
                                 int clientId = NextId(connection, tx, "Client", "id_client");
                                 int commissionId = NextId(connection, tx, "commissions", "commission_id");
                                 int contractId = NextId(connection, tx, "Contract", "id_contract");
+
+                                if (ExistsInTransaction(connection, tx, "SELECT COUNT(1) FROM Vehicles WHERE VIN=@vin", new SqlParameter("@vin", vin)))
+                                    throw new Exception("Автомобиль с таким VIN уже существует.");
 
                                 ExecuteInTransaction(connection, tx, @"INSERT INTO Client(id_client,last_name,first_name,middle_name,birth_date,passport_series,passport_number,inn,drivers_license_series,phone,email)
 VALUES(@id,@last_name,@first_name,@middle_name,@birth_date,@passport_series,@passport_number,@inn,@drivers_license_series,@phone,@email)",
@@ -158,7 +160,7 @@ VALUES(@id,@last_name,@first_name,@middle_name,@birth_date,@passport_series,@pas
 
                                 ExecuteInTransaction(connection, tx, @"INSERT INTO Vehicles(VIN,license_plate,id_brand,id_model,id_vehicle_category,engine_power,pts_series,pts_number,id_client)
 VALUES(@vin,@plate,@brand,@model,@cat,@power,@pts_series,@pts_number,@client)",
-                                    new SqlParameter("@vin", _vehicleVin.Text.Trim()),
+                                    new SqlParameter("@vin", vin),
                                     new SqlParameter("@plate", _vehiclePlate.Text.Trim()),
                                     new SqlParameter("@brand", _vehicleBrand.SelectedValue),
                                     new SqlParameter("@model", _vehicleModel.SelectedValue),
@@ -181,7 +183,7 @@ VALUES(@id,@type,@start,@end,@amount,@employee,@commission,@vin)",
                                     new SqlParameter("@amount", _amount.Value),
                                     new SqlParameter("@employee", _employee.SelectedValue),
                                     new SqlParameter("@commission", commissionId),
-                                    new SqlParameter("@vin", _vehicleVin.Text.Trim()));
+                                    new SqlParameter("@vin", vin));
 
                                 tx.Commit();
                             }
@@ -198,6 +200,46 @@ VALUES(@id,@type,@start,@end,@amount,@employee,@commission,@vin)",
             catch (Exception ex) { MessageBox.Show("Ошибка сохранения договора.\n" + ex.Message); }
         }
 
+        private bool ValidateCommonFields()
+        {
+            if (_type.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите тип страхования.");
+                return false;
+            }
+            if (_employee.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите сотрудника.");
+                return false;
+            }
+            if (_end.Value.Date < _start.Value.Date)
+            {
+                MessageBox.Show("Дата окончания не может быть раньше даты начала.");
+                return false;
+            }
+            return true;
+        }
+
+        private bool ValidateAddModeFields()
+        {
+            if (string.IsNullOrWhiteSpace(_clientLastName.Text) || string.IsNullOrWhiteSpace(_clientFirstName.Text))
+            {
+                MessageBox.Show("Укажите фамилию и имя клиента.");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(_vehicleVin.Text))
+            {
+                MessageBox.Show("Введите VIN автомобиля.");
+                return false;
+            }
+            if (_vehicleBrand.SelectedValue == null || _vehicleModel.SelectedValue == null || _vehicleCategory.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите марку, модель и категорию автомобиля.");
+                return false;
+            }
+            return true;
+        }
+
         private static int NextId(SqlConnection connection, SqlTransaction tx, string tableName, string idField)
         {
             using (var cmd = new SqlCommand(string.Format("SELECT ISNULL(MAX({0}), 0) + 1 FROM {1}", idField, tableName), connection, tx))
@@ -210,6 +252,15 @@ VALUES(@id,@type,@start,@end,@amount,@employee,@commission,@vin)",
             {
                 if (parameters != null && parameters.Length > 0) cmd.Parameters.AddRange(parameters);
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+        private static bool ExistsInTransaction(SqlConnection connection, SqlTransaction tx, string sql, params SqlParameter[] parameters)
+        {
+            using (var cmd = new SqlCommand(sql, connection, tx))
+            {
+                if (parameters != null && parameters.Length > 0) cmd.Parameters.AddRange(parameters);
+                return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
             }
         }
     }
