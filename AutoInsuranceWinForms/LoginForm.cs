@@ -7,6 +7,7 @@ namespace AutoInsuranceWinForms
     public class LoginForm : Form
     {
         private readonly TextBox _txtEmail = Theme.CreateTextBox(280);
+        private readonly TextBox _txtPassword = Theme.CreateTextBox(280);
         private readonly CheckBox _chkRemember = new CheckBox();
         private readonly Label _lblError = new Label();
         private readonly string _rememberFile = Path.Combine(Application.StartupPath, "last_email.txt");
@@ -36,20 +37,23 @@ namespace AutoInsuranceWinForms
             var wrap = new Panel { Dock = DockStyle.Fill, Padding = new Padding(40) };
             var card = Theme.CreateCard(28); card.Dock = DockStyle.Fill;
             var title = new Label { Text = "Вход в систему", Dock = DockStyle.Top, Height = 42, Font = new Font("Segoe UI", 18F, FontStyle.Bold) };
-            var sub = new Label { Text = "Введите e-mail. Роль определяется автоматически по App.config.", Dock = DockStyle.Top, Height = 40, ForeColor = Theme.Muted };
+            var sub = new Label { Text = "Введите e-mail и пароль. Роль определяется по App.config.", Dock = DockStyle.Top, Height = 40, ForeColor = Theme.Muted };
 
-            var layout = new TableLayoutPanel { Dock = DockStyle.Top, Height = 180, ColumnCount = 2, Padding = new Padding(0, 12, 0, 0) };
+            var layout = new TableLayoutPanel { Dock = DockStyle.Top, Height = 220, ColumnCount = 2, Padding = new Padding(0, 12, 0, 0) };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             layout.Controls.Add(new Label { Text = "E-mail", AutoSize = true, Padding = new Padding(0, 8, 0, 0) }, 0, 0);
             layout.Controls.Add(_txtEmail, 1, 0);
+            layout.Controls.Add(new Label { Text = "Пароль", AutoSize = true, Padding = new Padding(0, 8, 0, 0) }, 0, 1);
+            _txtPassword.UseSystemPasswordChar = true;
+            layout.Controls.Add(_txtPassword, 1, 1);
             _chkRemember.Text = "Запомнить e-mail"; _chkRemember.AutoSize = true;
-            layout.Controls.Add(_chkRemember, 1, 1);
+            layout.Controls.Add(_chkRemember, 1, 2);
             var lnk = new LinkLabel { Text = "Проверить подключение к SQL Server", AutoSize = true, LinkColor = Theme.Primary };
             lnk.Click += delegate { TestConnection(); };
-            layout.Controls.Add(lnk, 1, 2);
+            layout.Controls.Add(lnk, 1, 3);
             _lblError.AutoSize = true; _lblError.ForeColor = Color.Firebrick;
-            layout.Controls.Add(_lblError, 1, 3);
+            layout.Controls.Add(_lblError, 1, 4);
 
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 55, FlowDirection = FlowDirection.RightToLeft };
             var btnLogin = Theme.CreatePrimaryButton("Войти", 120, true);
@@ -87,10 +91,10 @@ namespace AutoInsuranceWinForms
 
         private void DoLogin()
         {
-            CurrentUser = AuthService.Authenticate(_txtEmail.Text);
+            CurrentUser = AuthService.Authenticate(_txtEmail.Text, _txtPassword.Text);
             if (CurrentUser == null)
             {
-                _lblError.Text = "Указанный e-mail не найден в учетных записях приложения.";
+                _lblError.Text = "Неверный e-mail или пароль.";
                 return;
             }
 
