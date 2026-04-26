@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace AutoInsuranceWinForms
@@ -80,7 +81,28 @@ namespace AutoInsuranceWinForms
             var btnSave = Theme.CreatePrimaryButton("Сохранить", 120); btnSave.Click += delegate { SaveData(); };
             var btnCancel = Theme.CreateSecondaryButton("Отмена", 120); btnCancel.Click += delegate { DialogResult = DialogResult.Cancel; Close(); };
             buttons.Controls.Add(btnSave); buttons.Controls.Add(btnCancel); Controls.Add(table); Controls.Add(buttons);
+            ConfigureInputRules();
             FillCombos(); if (id.HasValue) LoadData();
+        }
+
+        private void ConfigureInputRules()
+        {
+            _clientPassportSeries.MaxLength = 4;
+            _clientPassportNumber.MaxLength = 6;
+            _clientInn.MaxLength = 12;
+            _clientDriverSeries.MaxLength = 4;
+            _clientPhone.MaxLength = 18;
+            _vehicleVin.MaxLength = 17;
+            _vehiclePlate.MaxLength = 9;
+
+            _vehicleVin.CharacterCasing = CharacterCasing.Upper;
+            _vehiclePlate.CharacterCasing = CharacterCasing.Upper;
+
+            _clientPassportSeries.KeyPress += DigitsOnlyKeyPress;
+            _clientPassportNumber.KeyPress += DigitsOnlyKeyPress;
+            _clientInn.KeyPress += DigitsOnlyKeyPress;
+            _clientDriverSeries.KeyPress += DigitsOnlyKeyPress;
+            _vehicleVin.KeyPress += VinKeyPress;
         }
 
         private void FillCombos()
@@ -101,15 +123,6 @@ namespace AutoInsuranceWinForms
             control.Dock = DockStyle.Fill;
             control.Margin = new Padding(0, 4, 0, 4);
             t.Controls.Add(control, 1, r);
-        }
-
-        private void AddSection(TableLayoutPanel t, string title)
-        {
-            int r = t.RowCount++;
-            t.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
-            var lbl = new Label { Text = title, AutoSize = true, Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold), Padding = new Padding(0, 10, 0, 0) };
-            t.Controls.Add(lbl, 0, r);
-            t.SetColumnSpan(lbl, 2);
         }
 
         private void AddSection(TableLayoutPanel t, string title)
@@ -251,7 +264,69 @@ VALUES(@id,@type,@start,@end,@amount,@employee,@commission,@vin)",
                 MessageBox.Show("Выберите марку, модель и категорию автомобиля.");
                 return false;
             }
+            if (!Regex.IsMatch(_clientPassportSeries.Text.Trim(), @"^\d{4}$"))
+            {
+                MessageBox.Show("Серия паспорта должна содержать ровно 4 цифры.");
+                return false;
+            }
+            if (!Regex.IsMatch(_clientPassportNumber.Text.Trim(), @"^\d{6}$"))
+            {
+                MessageBox.Show("Номер паспорта должен содержать ровно 6 цифр.");
+                return false;
+            }
+            if (!Regex.IsMatch(_clientInn.Text.Trim(), @"^\d{10}(\d{2})?$"))
+            {
+                MessageBox.Show("ИНН должен содержать 10 или 12 цифр.");
+                return false;
+            }
+            if (!Regex.IsMatch(_clientDriverSeries.Text.Trim(), @"^\d{4}$"))
+            {
+                MessageBox.Show("Серия ВУ должна содержать ровно 4 цифры.");
+                return false;
+            }
+
+            var digitsPhone = Regex.Replace(_clientPhone.Text, @"\D", string.Empty);
+            if (digitsPhone.Length != 11)
+            {
+                MessageBox.Show("Телефон должен содержать 11 цифр.");
+                return false;
+            }
+
+            var email = _clientEmail.Text.Trim();
+            if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                MessageBox.Show("Введите корректный E-mail.");
+                return false;
+            }
+
+            var vin = _vehicleVin.Text.Trim().ToUpperInvariant();
+            if (!Regex.IsMatch(vin, @"^[A-HJ-NPR-Z0-9]{17}$"))
+            {
+                MessageBox.Show("VIN должен содержать ровно 17 символов (латинские буквы и цифры, без I, O, Q).");
+                return false;
+            }
+
+            var plate = _vehiclePlate.Text.Trim().ToUpperInvariant();
+            if (!Regex.IsMatch(plate, @"^[А-ЯA-Z]\d{3}[А-ЯA-Z]{2}\d{2,3}$"))
+            {
+                MessageBox.Show("Госномер должен быть в формате A123BC77 или A123BC777.");
+                return false;
+            }
             return true;
+        }
+
+        private static void DigitsOnlyKeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private static void VinKeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (char.IsControl(e.KeyChar)) return;
+            var c = char.ToUpperInvariant(e.KeyChar);
+            if (!char.IsLetterOrDigit(c) || c == 'I' || c == 'O' || c == 'Q')
+                e.Handled = true;
         }
 
         private static int NextId(SqlConnection connection, SqlTransaction tx, string tableName, string idField)
