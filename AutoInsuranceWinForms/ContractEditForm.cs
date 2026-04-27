@@ -264,6 +264,16 @@ VALUES(@id,@type,@start,@end,@amount,@employee,@commission,@vin)",
                 MessageBox.Show("Выберите марку, модель и категорию автомобиля.");
                 return false;
             }
+            if (string.IsNullOrWhiteSpace(_clientPhone.Text) || string.IsNullOrWhiteSpace(_clientEmail.Text))
+            {
+                MessageBox.Show("Заполните телефон и e-mail клиента.");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(_vehiclePlate.Text) || string.IsNullOrWhiteSpace(_vehiclePtsSeries.Text) || string.IsNullOrWhiteSpace(_vehiclePtsNumber.Text))
+            {
+                MessageBox.Show("Заполните госномер, серию и номер ПТС.");
+                return false;
+            }
             if (!Regex.IsMatch(_clientPassportSeries.Text.Trim(), @"^\d{4}$"))
             {
                 MessageBox.Show("Серия паспорта должна содержать ровно 4 цифры.");

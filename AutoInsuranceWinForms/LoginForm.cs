@@ -91,6 +91,17 @@ namespace AutoInsuranceWinForms
 
         private void DoLogin()
         {
+            if (string.IsNullOrWhiteSpace(_txtEmail.Text))
+            {
+                _lblError.Text = "Введите e-mail.";
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(_txtPassword.Text))
+            {
+                _lblError.Text = "Введите пароль.";
+                return;
+            }
+
             CurrentUser = AuthService.Authenticate(_txtEmail.Text, _txtPassword.Text);
             if (CurrentUser == null)
             {
