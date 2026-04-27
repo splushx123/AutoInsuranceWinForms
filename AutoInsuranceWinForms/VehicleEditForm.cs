@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace AutoInsuranceWinForms
@@ -33,7 +34,22 @@ namespace AutoInsuranceWinForms
             var btnCancel = Theme.CreateSecondaryButton("Отмена", 120); btnCancel.Click += delegate { DialogResult = DialogResult.Cancel; Close(); };
             buttons.Controls.Add(btnSave); buttons.Controls.Add(btnCancel);
             Controls.Add(table); Controls.Add(buttons);
+            ConfigureInputRules();
             FillCombos(); if (!string.IsNullOrEmpty(vin)) LoadData();
+        }
+
+        private void ConfigureInputRules()
+        {
+            _vin.MaxLength = 17;
+            _plate.MaxLength = 9;
+            _ptsSeries.MaxLength = 4;
+            _ptsNumber.MaxLength = 6;
+            _vin.CharacterCasing = CharacterCasing.Upper;
+            _plate.CharacterCasing = CharacterCasing.Upper;
+
+            _vin.KeyPress += VinKeyPress;
+            _ptsSeries.KeyPress += DigitsOnlyKeyPress;
+            _ptsNumber.KeyPress += DigitsOnlyKeyPress;
         }
 
         private void FillCombos()
@@ -64,7 +80,8 @@ namespace AutoInsuranceWinForms
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(_vin.Text)) { MessageBox.Show("Введите VIN."); return; }
+                if (!ValidateFields()) return;
+                string vinText = _vin.Text.Trim().ToUpperInvariant();
                 if (!string.IsNullOrEmpty(_vinKey))
                 {
                     Db.Execute(@"UPDATE Vehicles SET license_plate=@plate, id_brand=@brand, id_model=@model, id_vehicle_category=@cat, engine_power=@power,
@@ -77,13 +94,64 @@ pts_series=@pts_series, pts_number=@pts_number, id_client=@client WHERE VIN=@vin
                 {
                     Db.Execute(@"INSERT INTO Vehicles(VIN,license_plate,id_brand,id_model,id_vehicle_category,engine_power,pts_series,pts_number,id_client)
 VALUES(@vin,@plate,@brand,@model,@cat,@power,@pts_series,@pts_number,@client)",
-                        new SqlParameter("@vin", _vin.Text.Trim()), new SqlParameter("@plate", _plate.Text.Trim()), new SqlParameter("@brand", _brand.SelectedValue), new SqlParameter("@model", _model.SelectedValue),
+                        new SqlParameter("@vin", vinText), new SqlParameter("@plate", _plate.Text.Trim()), new SqlParameter("@brand", _brand.SelectedValue), new SqlParameter("@model", _model.SelectedValue),
                         new SqlParameter("@cat", _category.SelectedValue), new SqlParameter("@power", _power.Value), new SqlParameter("@pts_series", _ptsSeries.Text.Trim()),
                         new SqlParameter("@pts_number", _ptsNumber.Text.Trim()), new SqlParameter("@client", _client.SelectedValue));
                 }
                 DialogResult = DialogResult.OK; Close();
             }
             catch (Exception ex) { MessageBox.Show("Ошибка сохранения автомобиля.\n" + ex.Message); }
+        }
+
+        private bool ValidateFields()
+        {
+            var vinText = _vin.Text.Trim().ToUpperInvariant();
+            var plateText = _plate.Text.Trim().ToUpperInvariant();
+            if (!Regex.IsMatch(vinText, @"^[A-HJ-NPR-Z0-9]{17}$"))
+            {
+                MessageBox.Show("VIN должен содержать 17 символов (латинские буквы и цифры, без I, O, Q).");
+                return false;
+            }
+            if (!Regex.IsMatch(plateText, @"^[А-ЯA-Z]\d{3}[А-ЯA-Z]{2}\d{2,3}$"))
+            {
+                MessageBox.Show("Госномер должен быть в формате A123BC77 или A123BC777.");
+                return false;
+            }
+            if (!Regex.IsMatch(_ptsSeries.Text.Trim(), @"^\d{4}$"))
+            {
+                MessageBox.Show("Серия ПТС должна содержать 4 цифры.");
+                return false;
+            }
+            if (!Regex.IsMatch(_ptsNumber.Text.Trim(), @"^\d{6}$"))
+            {
+                MessageBox.Show("Номер ПТС должен содержать 6 цифр.");
+                return false;
+            }
+            if (_brand.SelectedValue == null || _model.SelectedValue == null || _category.SelectedValue == null || _client.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите марку, модель, категорию и владельца.");
+                return false;
+            }
+            if (_power.Value <= 0)
+            {
+                MessageBox.Show("Мощность должна быть больше 0.");
+                return false;
+            }
+            return true;
+        }
+
+        private static void DigitsOnlyKeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                e.Handled = true;
+        }
+
+        private static void VinKeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (char.IsControl(e.KeyChar)) return;
+            var c = char.ToUpperInvariant(e.KeyChar);
+            if (!char.IsLetterOrDigit(c) || c == 'I' || c == 'O' || c == 'Q')
+                e.Handled = true;
         }
     }
 }
