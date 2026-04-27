@@ -244,6 +244,21 @@ VALUES(@id,@type,@start,@end,@amount,@employee,@commission,@vin)",
                 MessageBox.Show("Дата окончания не может быть раньше даты начала.");
                 return false;
             }
+            if (_amount.Value <= 0)
+            {
+                MessageBox.Show("Страховая сумма должна быть больше 0.");
+                return false;
+            }
+            if (_id.HasValue && _vin.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите автомобиль.");
+                return false;
+            }
+            if (_id.HasValue && _commission.Value <= 0)
+            {
+                MessageBox.Show("Код комиссии должен быть больше 0.");
+                return false;
+            }
             return true;
         }
 
