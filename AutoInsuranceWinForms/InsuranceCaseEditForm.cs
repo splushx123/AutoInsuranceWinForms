@@ -25,6 +25,46 @@ namespace AutoInsuranceWinForms
         }
         private void AddField(TableLayoutPanel t, string n, Control c) { int r = t.RowCount++; t.RowStyles.Add(new RowStyle(SizeType.Absolute, 40)); t.Controls.Add(new Label { Text = n, AutoSize = true, Padding = new Padding(0, 9, 0, 0) }, 0, r); t.Controls.Add(c, 1, r); }
         private void LoadData() { var dt = Db.Query("SELECT * FROM Insurance_cases WHERE case_id=@id", new SqlParameter("@id", _id.Value)); if (dt.Rows.Count == 0) return; var r = dt.Rows[0]; _contract.SelectedValue = Convert.ToInt32(r["id_contract"]); _description.Text = r["brief_description"].ToString(); _damage.Value = Convert.ToDecimal(r["final_damage"]); _guilty.Value = Convert.ToDecimal(r["guilty_person"]); }
-        private void SaveData() { try { if (_id.HasValue) Db.Execute("UPDATE Insurance_cases SET id_contract=@contract, brief_description=@description, final_damage=@damage, guilty_person=@guilty WHERE case_id=@id", new SqlParameter("@contract", _contract.SelectedValue), new SqlParameter("@description", _description.Text.Trim()), new SqlParameter("@damage", _damage.Value), new SqlParameter("@guilty", Convert.ToInt32(_guilty.Value)), new SqlParameter("@id", _id.Value)); else Db.Execute("INSERT INTO Insurance_cases(case_id,id_contract,brief_description,final_damage,guilty_person) VALUES(@id,@contract,@description,@damage,@guilty)", new SqlParameter("@id", Db.NextId("Insurance_cases", "case_id")), new SqlParameter("@contract", _contract.SelectedValue), new SqlParameter("@description", _description.Text.Trim()), new SqlParameter("@damage", _damage.Value), new SqlParameter("@guilty", Convert.ToInt32(_guilty.Value))); DialogResult = DialogResult.OK; Close(); } catch (Exception ex) { MessageBox.Show("Ошибка сохранения страхового случая.\n" + ex.Message); } }
+        private void SaveData()
+        {
+            try
+            {
+                if (!ValidateFields()) return;
+
+                if (_id.HasValue)
+                    Db.Execute("UPDATE Insurance_cases SET id_contract=@contract, brief_description=@description, final_damage=@damage, guilty_person=@guilty WHERE case_id=@id", new SqlParameter("@contract", _contract.SelectedValue), new SqlParameter("@description", _description.Text.Trim()), new SqlParameter("@damage", _damage.Value), new SqlParameter("@guilty", Convert.ToInt32(_guilty.Value)), new SqlParameter("@id", _id.Value));
+                else
+                    Db.Execute("INSERT INTO Insurance_cases(case_id,id_contract,brief_description,final_damage,guilty_person) VALUES(@id,@contract,@description,@damage,@guilty)", new SqlParameter("@id", Db.NextId("Insurance_cases", "case_id")), new SqlParameter("@contract", _contract.SelectedValue), new SqlParameter("@description", _description.Text.Trim()), new SqlParameter("@damage", _damage.Value), new SqlParameter("@guilty", Convert.ToInt32(_guilty.Value)));
+
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex) { MessageBox.Show("Ошибка сохранения страхового случая.\n" + ex.Message); }
+        }
+
+        private bool ValidateFields()
+        {
+            if (_contract.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите договор.");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(_description.Text))
+            {
+                MessageBox.Show("Заполните описание страхового случая.");
+                return false;
+            }
+            if (_damage.Value <= 0)
+            {
+                MessageBox.Show("Сумма ущерба должна быть больше 0.");
+                return false;
+            }
+            if (_guilty.Value <= 0)
+            {
+                MessageBox.Show("Код виновного должен быть больше 0.");
+                return false;
+            }
+            return true;
+        }
     }
 }

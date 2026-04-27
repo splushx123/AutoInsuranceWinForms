@@ -24,6 +24,41 @@ namespace AutoInsuranceWinForms
         }
         private void AddField(TableLayoutPanel t, string n, Control c) { int r = t.RowCount++; t.RowStyles.Add(new RowStyle(SizeType.Absolute, 40)); t.Controls.Add(new Label { Text = n, AutoSize = true, Padding = new Padding(0, 9, 0, 0) }, 0, r); t.Controls.Add(c, 1, r); }
         private void LoadData() { var dt = Db.Query("SELECT * FROM Insurance_payouts WHERE payout_id=@id", new SqlParameter("@id", _id.Value)); if (dt.Rows.Count == 0) return; DataRow r = dt.Rows[0]; _case.SelectedValue = Convert.ToInt32(r["case_id"]); _amount.Value = Convert.ToDecimal(r["payout_amount"]); _date.Value = Convert.ToDateTime(r["payout_date"]); }
-        private void SaveData() { try { if (_id.HasValue) Db.Execute("UPDATE Insurance_payouts SET case_id=@case, payout_amount=@amount, payout_date=@date WHERE payout_id=@id", new SqlParameter("@case", _case.SelectedValue), new SqlParameter("@amount", _amount.Value), new SqlParameter("@date", _date.Value.Date), new SqlParameter("@id", _id.Value)); else Db.Execute("INSERT INTO Insurance_payouts(payout_id,case_id,payout_amount,payout_date) VALUES(@id,@case,@amount,@date)", new SqlParameter("@id", Db.NextId("Insurance_payouts", "payout_id")), new SqlParameter("@case", _case.SelectedValue), new SqlParameter("@amount", _amount.Value), new SqlParameter("@date", _date.Value.Date)); DialogResult = DialogResult.OK; Close(); } catch (Exception ex) { MessageBox.Show("Ошибка сохранения выплаты.\n" + ex.Message); } }
+        private void SaveData()
+        {
+            try
+            {
+                if (!ValidateFields()) return;
+
+                if (_id.HasValue)
+                    Db.Execute("UPDATE Insurance_payouts SET case_id=@case, payout_amount=@amount, payout_date=@date WHERE payout_id=@id", new SqlParameter("@case", _case.SelectedValue), new SqlParameter("@amount", _amount.Value), new SqlParameter("@date", _date.Value.Date), new SqlParameter("@id", _id.Value));
+                else
+                    Db.Execute("INSERT INTO Insurance_payouts(payout_id,case_id,payout_amount,payout_date) VALUES(@id,@case,@amount,@date)", new SqlParameter("@id", Db.NextId("Insurance_payouts", "payout_id")), new SqlParameter("@case", _case.SelectedValue), new SqlParameter("@amount", _amount.Value), new SqlParameter("@date", _date.Value.Date));
+
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex) { MessageBox.Show("Ошибка сохранения выплаты.\n" + ex.Message); }
+        }
+
+        private bool ValidateFields()
+        {
+            if (_case.SelectedValue == null)
+            {
+                MessageBox.Show("Выберите страховой случай.");
+                return false;
+            }
+            if (_amount.Value <= 0)
+            {
+                MessageBox.Show("Сумма выплаты должна быть больше 0.");
+                return false;
+            }
+            if (_date.Value.Date > DateTime.Today)
+            {
+                MessageBox.Show("Дата выплаты не может быть в будущем.");
+                return false;
+            }
+            return true;
+        }
     }
 }

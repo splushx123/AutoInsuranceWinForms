@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace AutoInsuranceWinForms
@@ -41,7 +42,22 @@ namespace AutoInsuranceWinForms
             btnCancel.Click += delegate { DialogResult = DialogResult.Cancel; Close(); };
             buttons.Controls.Add(btnSave); buttons.Controls.Add(btnCancel);
             Controls.Add(table); Controls.Add(buttons);
+            ConfigureInputRules();
             if (id.HasValue) LoadData();
+        }
+
+        private void ConfigureInputRules()
+        {
+            _passportSeries.MaxLength = 4;
+            _passportNumber.MaxLength = 6;
+            _inn.MaxLength = 12;
+            _driverSeries.MaxLength = 4;
+            _phone.MaxLength = 18;
+
+            _passportSeries.KeyPress += DigitsOnlyKeyPress;
+            _passportNumber.KeyPress += DigitsOnlyKeyPress;
+            _inn.KeyPress += DigitsOnlyKeyPress;
+            _driverSeries.KeyPress += DigitsOnlyKeyPress;
         }
 
         private void AddField(TableLayoutPanel t, string name, Control control)
@@ -66,6 +82,8 @@ namespace AutoInsuranceWinForms
         {
             try
             {
+                if (!ValidateFields()) return;
+
                 if (_id.HasValue)
                 {
                     Db.Execute(@"UPDATE Client SET last_name=@last_name, first_name=@first_name, middle_name=@middle_name, birth_date=@birth_date,
@@ -89,6 +107,64 @@ VALUES(@id,@last_name,@first_name,@middle_name,@birth_date,@passport_series,@pas
                 DialogResult = DialogResult.OK; Close();
             }
             catch (Exception ex) { MessageBox.Show("Ошибка сохранения клиента.\n" + ex.Message); }
+        }
+
+        private bool ValidateFields()
+        {
+            if (string.IsNullOrWhiteSpace(_lastName.Text) || string.IsNullOrWhiteSpace(_firstName.Text))
+            {
+                MessageBox.Show("Введите фамилию и имя клиента.");
+                return false;
+            }
+
+            var now = DateTime.Today;
+            if (_birthDate.Value.Date > now)
+            {
+                MessageBox.Show("Дата рождения не может быть в будущем.");
+                return false;
+            }
+
+            if (!Regex.IsMatch(_passportSeries.Text.Trim(), @"^\d{4}$"))
+            {
+                MessageBox.Show("Серия паспорта должна содержать 4 цифры.");
+                return false;
+            }
+            if (!Regex.IsMatch(_passportNumber.Text.Trim(), @"^\d{6}$"))
+            {
+                MessageBox.Show("Номер паспорта должен содержать 6 цифр.");
+                return false;
+            }
+            if (!Regex.IsMatch(_inn.Text.Trim(), @"^\d{10}(\d{2})?$"))
+            {
+                MessageBox.Show("ИНН должен содержать 10 или 12 цифр.");
+                return false;
+            }
+            if (!Regex.IsMatch(_driverSeries.Text.Trim(), @"^\d{4}$"))
+            {
+                MessageBox.Show("Серия ВУ должна содержать 4 цифры.");
+                return false;
+            }
+
+            var digitsPhone = Regex.Replace(_phone.Text, @"\D", string.Empty);
+            if (digitsPhone.Length != 11)
+            {
+                MessageBox.Show("Телефон должен содержать 11 цифр.");
+                return false;
+            }
+
+            if (!Regex.IsMatch(_email.Text.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                MessageBox.Show("Введите корректный e-mail.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static void DigitsOnlyKeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+                e.Handled = true;
         }
     }
 }
